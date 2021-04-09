@@ -18,8 +18,8 @@ y = [-width/2,width/2,width/2,-width/2];
 car = patch('XData',x,'YData',y,'FaceColor','red','Parent',g);
 set(car,'parent',g);
 
-for i = 1:size(planStates,2)
-    pose = num2cell(planStates(:,i));
+for i = 1:size(planStates,1)
+    pose = num2cell(planStates(i,:));
     [x,y,theta,steer] = pose{:};
     
     trans=makehgtform('translate',[x y 0]);

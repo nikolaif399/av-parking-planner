@@ -6,18 +6,11 @@ costmap = combineMapLayers(mapLayers);
 vehicleDims = [4,2]; % length, width
 
 % Call planner here
-planStates = repmat([10;10;0.4;0],1,200);
-planStates(1,:) = linspace(10,40,200);
-ts = 1:200;
-planStates(2,:) = 14 + 10*sin(0.02*ts);
-vx = diff(planStates(1,:));
-vy = diff(planStates(2,:));
-vx = [vx vx(end)];
-vy = [vy vy(end)];
+startState = [10;10;0.4;0];
+goalState = [40;20;0.6;0];
+[planStates,planLength] = planner(startState,goalState);
 
-planStates(3,:) = atan2(vy,vx);
-
-fprintf("Plan returned of length %d\n",size(planStates,2));
+fprintf("Plan returned of length %d\n",size(planStates,1));
 
 animateTrajectory(costmap,planStates,vehicleDims);
 
