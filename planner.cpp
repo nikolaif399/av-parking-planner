@@ -2,6 +2,9 @@
 #include <vector>
 #include "mex.h"
 
+#include "code/MultiGoalRRTConnect.h"
+#include "code/planner_utils.h"
+
 #if !defined(MAX)
 #define	MAX(A, B)	((A) > (B) ? (A) : (B))
 #endif
@@ -13,51 +16,20 @@
 /* Input Arguments */
 #define	START_IN	prhs[0]
 #define	GOAL_IN     prhs[1]
+#define	VEHICLE_DIMS_IN     prhs[2]
 
 /* Output Arguments */
 #define	PLAN_OUT	plhs[0]
 #define	PLANLENGTH_OUT	plhs[1]
-
-typedef std::vector<double> State;
-
-inline double GetRand(double min, double max) {
-  return min + (max - min) * (double) rand()/RAND_MAX;
-}
-
-State get_intermediate_state(State q1, State q2, double r, int n) {
-  State q_interm(n);
-
-  for (int i = 0; i < n; ++i) {
-    q_interm[i] = q1[i] + r*(q2[i] - q1[i]);
-  }
-  return q_interm;
-}
-
-static void planner(
-      State start_state,
-      State goal_state,
-      std::vector<State> &plan)
-{
-  int state_size = start_state.size();
-
-	// Arbitrary plan to test mex bindings
-  int plan_length = 100;
-  plan.resize(plan_length);
-
-  // Just interpolate from start to goal
-  for (int i = 0; i < plan.size(); ++i) {
-    plan.at(i) = get_intermediate_state(start_state,goal_state,(double)i/(plan_length-1),state_size);
-  }
-}
 
 void mexFunction( int nlhs, mxArray *plhs[], 
 		  int nrhs, const mxArray*prhs[])
      
 { 
   /* Check for proper number of arguments */    
-  if (nrhs != 2) { 
+  if (nrhs != 3) { 
     mexErrMsgIdAndTxt( "MATLAB:planner:invalidNumInputs",
-              "Two input arguments required."); 
+              "Three input arguments required."); 
   } else if (nlhs != 2) {
     mexErrMsgIdAndTxt( "MATLAB:planner:maxlhs",
               "Two output argument required."); 
@@ -78,10 +50,20 @@ void mexFunction( int nlhs, mxArray *plhs[],
   }
   double* goal_array = mxGetPr(GOAL_IN);
   State goal_state (goal_array, goal_array + state_size);
-  
+
+  // get the vehicle dimensions
+  int vehicle_dims_size = (int) (MAX(mxGetM(VEHICLE_DIMS_IN), mxGetN(VEHICLE_DIMS_IN)));
+  if (vehicle_dims_size != 2){
+            mexErrMsgIdAndTxt( "MATLAB:planner:invalid_vehicle_dims_size",
+              "vehicle dims should be of size 2 (length,width)");         
+  }
+  double* vehicle_dims = mxGetPr(VEHICLE_DIMS_IN);
+  double vehicle_length = vehicle_dims[0];
+  double vehicle_width = vehicle_dims[1];
+
   //call the planner
-  std::vector<State> plan;
-  planner(start_state, goal_state, plan);   
+  MultiGoalRRTConnect planner(vehicle_length, vehicle_width);
+  std::vector<State> plan = planner.plan(start_state, goal_state);
   int planlength = plan.size();
   printf("planner returned plan of length=%d\n", planlength); 
 

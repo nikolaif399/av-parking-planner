@@ -2,3 +2,14 @@
 
 ### Sample animation using parking lot environment
 ![Parking Lot Environment](environment_video.gif)
+
+
+### Build and Run instructions
+(from matlab command terminal)
+```bash
+cd av-parking-planner
+mex planner.cpp code/*.cpp -Icode/*.h
+runplanner
+```
+
+

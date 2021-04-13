@@ -8,7 +8,7 @@ vehicleDims = [4,2]; % length, width
 % Call planner here
 startState = [10;10;0.4;0];
 goalState = [40;20;0.6;0];
-[planStates,planLength] = planner(startState,goalState);
+[planStates,planLength] = planner(startState,goalState,vehicleDims);
 
 fprintf("Plan returned of length %d\n",size(planStates,1));
 
