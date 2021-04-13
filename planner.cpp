@@ -5,18 +5,12 @@
 #include "code/MultiGoalRRTConnect.h"
 #include "code/planner_utils.h"
 
-#if !defined(MAX)
-#define	MAX(A, B)	((A) > (B) ? (A) : (B))
-#endif
-
-#if !defined(MIN)
-#define	MIN(A, B)	((A) < (B) ? (A) : (B))
-#endif
-
 /* Input Arguments */
 #define	START_IN	prhs[0]
 #define	GOAL_IN     prhs[1]
 #define	VEHICLE_DIMS_IN     prhs[2]
+#define	MAP_IN     prhs[3]
+#define	CELL_SIZE_IN     prhs[4]
 
 /* Output Arguments */
 #define	PLAN_OUT	plhs[0]
@@ -27,9 +21,9 @@ void mexFunction( int nlhs, mxArray *plhs[],
      
 { 
   /* Check for proper number of arguments */    
-  if (nrhs != 3) { 
+  if (nrhs != 5) { 
     mexErrMsgIdAndTxt( "MATLAB:planner:invalidNumInputs",
-              "Three input arguments required."); 
+              "Five input arguments required."); 
   } else if (nlhs != 2) {
     mexErrMsgIdAndTxt( "MATLAB:planner:maxlhs",
               "Two output argument required."); 
@@ -61,11 +55,21 @@ void mexFunction( int nlhs, mxArray *plhs[],
   double vehicle_length = vehicle_dims[0];
   double vehicle_width = vehicle_dims[1];
 
-  //call the planner
-  MultiGoalRRTConnect planner(vehicle_length, vehicle_width);
+  // get the occupancy grid
+  int x_size = (int) mxGetM(MAP_IN);
+  int y_size = (int) mxGetN(MAP_IN);
+  bool* occupancy_grid = mxGetLogicals(MAP_IN);
+
+  // get the cell size
+  double cell_size = *mxGetPr(CELL_SIZE_IN);
+  printf("Cell size: %f\n", cell_size);
+
+  // call the planner
+  MultiGoalRRTConnect planner(vehicle_length, vehicle_width, x_size, y_size, occupancy_grid, cell_size);
   std::vector<State> plan = planner.plan(start_state, goal_state);
+
   int planlength = plan.size();
-  printf("planner returned plan of length=%d\n", planlength); 
+  printf("planner returned plan of length %d\n", planlength); 
 
   // Create output plan
   PLAN_OUT = mxCreateNumericMatrix( (mwSize)planlength, (mwSize)state_size, mxDOUBLE_CLASS, mxREAL); 

@@ -4,6 +4,17 @@
 #include <math.h>
 #include <vector>
 
+#define GETMAPINDEX(X, Y, XSIZE, YSIZE) (Y*XSIZE + X)
+
+#if !defined(MAX)
+#define	MAX(A, B)	((A) > (B) ? (A) : (B))
+#endif
+
+#if !defined(MIN)
+#define	MIN(A, B)	((A) < (B) ? (A) : (B))
+#endif
+
+
 typedef std::vector<double> State;
 
 inline double GetRand(double min, double max) {
