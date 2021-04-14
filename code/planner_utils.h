@@ -31,4 +31,5 @@ inline State get_intermediate_state(State q1, State q2, double r) {
   return q_interm;
 }
 
+
 #endif
