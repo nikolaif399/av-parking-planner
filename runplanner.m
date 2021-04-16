@@ -10,9 +10,9 @@ costmap = combineMapLayers(mapLayers);
 vehicleDims = [4,2]; % length, width
 
 % Call planner here
-startState = [10;10;0.4;0];
-goalState = [40;20;0.6;0];
-[planStates,planLength] = planner(startState,goalState,vehicleDims,combinedMap,costmap.CellSize);
+startState = [10;5;0;0;0];
+goalState = [57.5;45;pi/2;0;0];
+[planStates,planLength] = planner(startState,goalState,vehicleDims,combinedMap',costmap.CellSize);
 
 animateTrajectory(costmap,planStates,vehicleDims);
 

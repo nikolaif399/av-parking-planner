@@ -1,5 +1,6 @@
 #include "CollisionDetector.h"
-#include "mex.h"
+
+typedef std::pair<int, int> Coord;
 
 CollisionDetector::CollisionDetector(double vehicle_length, double vehicle_width, int x_size, int y_size, bool* occupancy_grid, double cell_size) {
   vehicle_length_ = vehicle_length;
@@ -9,7 +10,28 @@ CollisionDetector::CollisionDetector(double vehicle_length, double vehicle_width
 
   occupancy_grid_ = new bool[x_size_ * y_size_];
   memcpy(occupancy_grid_, occupancy_grid, x_size_ * y_size_ * sizeof(bool));
+  printf("Occupancy map size: x = %d, y = %d\n", x_size, y_size_);
+  int occupied_cells = 0;
+  for (int i = 0; i < x_size*y_size; ++i) {
+    if (occupancy_grid_[i]) occupied_cells++;
+  }
+  printf("Grid cells occupied: %d/%d (%.1f%%)\n", occupied_cells, x_size*y_size, static_cast<double>(occupied_cells)/x_size/y_size*100.0);
+  int index_test = GETMAPINDEX(79,90,x_size_,y_size_);
+  printf("39.5,45 colliding?: %d\n", occupancy_grid[index_test]);
   cell_size_ = cell_size;
+
+  for (int x = 0; x < x_size; ++x) {
+    for (int y = 0; y < y_size; ++y) {
+      int index_test = GETMAPINDEX(x,y,x_size_,y_size_);
+      if (occupancy_grid[index_test]) {
+        printf("O");
+      }
+      else {
+        printf(".");
+      }
+    }
+    printf("\n");
+  }
 }
 
 CollisionDetector::~CollisionDetector() {
@@ -22,8 +44,8 @@ void CollisionDetector::pointToGridIndices(double x, double y, int &x_ind, int &
 }
 
 //http://playtechs.blogspot.com/2007/03/raytracing-on-grid.html
-std::vector<std::pair<int,int>> CollisionDetector::raster_line(double x0, double y0, double x1, double y1){
-  std::vector<std::pair<int,int>> coords;
+std::vector<Coord> CollisionDetector::raster_line(double x0, double y0, double x1, double y1){
+  std::vector<Coord> coords;
 
   double dx = fabs(x1 - x0);
   double dy = fabs(y1 - y0);
@@ -91,38 +113,101 @@ std::vector<std::pair<int,int>> CollisionDetector::raster_line(double x0, double
 
 // True means collision, false means free
 bool CollisionDetector::checkCollision(State state) {
-  double x = state.at(0);
-  double y = state.at(1);
-  double theta = state.at(2);
+  double xcar = state.at(0);
+  double ycar = state.at(1);
+  double thetacar = state.at(2);
 
-  // Find indices of four corners
-  double x1 = x + vehicle_width_/2*sin(theta);
-  double y1 = y - vehicle_width_/2*cos(theta);
+  double scar = sin(thetacar);
+  double ccar = cos(thetacar);
 
-  double x2 = x - vehicle_width_/2*sin(theta);
-  double y2 = y + vehicle_width_/2*cos(theta);
+  // Find indices of four corners in state space units
+  double x1 = xcar + vehicle_width_/2*scar;
+  double y1 = ycar - vehicle_width_/2*ccar;
 
-  double x3 = x2 + vehicle_length_*cos(theta);
-  double y3 = y2 + vehicle_length_*sin(theta);
+  double x2 = xcar - vehicle_width_/2*scar;
+  double y2 = ycar + vehicle_width_/2*ccar;
 
-  double x4 = x1 + vehicle_length_*cos(theta);
-  double y4 = y1 + vehicle_length_*sin(theta);
+  double x3 = x2 + vehicle_length_*ccar;
+  double y3 = y2 + vehicle_length_*scar;
 
-  std::vector<std::pair<int,int>> l12_coords = this->raster_line(x1,y1,x2,y2);
-  printf("L12 Found %d coords between (%f,%f) and (%f,%f).\n", l12_coords.size(),x1,y1,x2,y2);
+  double x4 = x1 + vehicle_length_*ccar;
+  double y4 = y1 + vehicle_length_*scar;
 
-  std::vector<std::pair<int,int>> l23_coords = this->raster_line(x2,y2,x3,y3);
-  printf("L23 Found %d coords between (%f,%f) and (%f,%f).\n", l23_coords.size(),x2,y2,x3,y3);
+  // Convert all corners to occupancy grid measurements
+  x1 /= cell_size_;
+  y1 /= cell_size_;
+  x2 /= cell_size_;
+  y2 /= cell_size_;
+  x3 /= cell_size_;
+  y3 /= cell_size_;
+  x4 /= cell_size_;
+  y4 /= cell_size_;
 
-  std::vector<std::pair<int,int>> l34_coords = this->raster_line(x3,y3,x4,y4);
-  printf("L34 Found %d coords between (%f,%f) and (%f,%f).\n", l34_coords.size(),x3,y3,x4,y4);
+  // Compute all indices along the border of the car
+  std::vector<Coord> edge_indices;
 
-  std::vector<std::pair<int,int>> l41_coords = this->raster_line(x4,y4,x1,y1);
-  printf("L41 Found %d coords between (%f,%f) and (%f,%f).\n", l41_coords.size(),x4,y4,x1,y1);
+  std::vector<Coord> l12_coords = this->raster_line(x1,y1,x2,y2);
+  //printf("L12 Found %d coords between (%f,%f) and (%f,%f).\n", l12_coords.size(),x1,y1,x2,y2);
+  edge_indices.insert(edge_indices.end(), l12_coords.begin(), l12_coords.end());
 
-  x = x/cell_size_;
-  y = y/cell_size_;
-  int index_test = GETMAPINDEX(x,y,x_size_,y_size_);
+  std::vector<Coord> l23_coords = this->raster_line(x2,y2,x3,y3);
+  //printf("L23 Found %d coords between (%f,%f) and (%f,%f).\n", l23_coords.size(),x2,y2,x3,y3);
+  edge_indices.insert(edge_indices.end(), l23_coords.begin(), l23_coords.end());
+
+  std::vector<Coord> l34_coords = this->raster_line(x3,y3,x4,y4);
+  //printf("L34 Found %d coords between (%f,%f) and (%f,%f).\n", l34_coords.size(),x3,y3,x4,y4);
+  edge_indices.insert(edge_indices.end(), l34_coords.begin(), l34_coords.end());
+
+  std::vector<Coord> l41_coords = this->raster_line(x4,y4,x1,y1);
+  //printf("L41 Found %d coords between (%f,%f) and (%f,%f).\n", l41_coords.size(),x4,y4,x1,y1);
+  edge_indices.insert(edge_indices.end(), l41_coords.begin(), l41_coords.end());
+
+  // Minimum and maximum values must lie at a corner
+  int xmin = std::min({x1,x2,x3,x4});
+  int xmax = std::max({x1,x2,x3,x4});
+
+  //printf("Xmin: %d\n", xmin);
+  //printf("Xmax: %d\n", xmax);
+
+  std::vector<int> ymins;
+  ymins.assign(xmax - xmin + 1, y_size_ + 1);
+
+  std::vector<int> ymaxs;
+  ymaxs.assign(xmax - xmin + 1, -1);
+
+  for (auto coord : edge_indices) {
+    int xind = coord.first - xmin;
+    ymins.at(xind) = std::min(coord.second, ymins.at(xind));
+    ymaxs.at(xind) = std::max(coord.second, ymaxs.at(xind));
+  }
+  
+  for (int x = xmin; x <= xmax; ++x) {
+    int xind = x - xmin;
+
+    //printf("%d: %d -> %d\n", xind, ymins.at(xind), ymaxs.at(xind));
+    for (int y = ymins.at(xind); y <= ymaxs.at(xind); ++y) {
+      int index_test = GETMAPINDEX(x,y,x_size_,y_size_);
+ 
+      if (occupancy_grid_[index_test]) {
+        printf("(%d,%d) colliding (grid space) -> (%f,%f) in state space\n",x,y,x*cell_size_,y*cell_size_);
+        return true; // Collision
+      }
+    }
+  }
 
   return false;
+}
+
+bool CollisionDetector::checkCollisionLine(State q1, State q2, int N = 100) {
+  double dist = StateDistance(q1,q2); // normalized difference
+
+  int numPoints = dist * N;
+
+  for (int i = 0; i <= numPoints; ++i) {
+    double r = static_cast<double>(i)/static_cast<double>(numPoints);
+    State q = GetIntermediateState(q1,q2,r);
+    if (this->checkCollision(q)) return false;
+  }
+
+  return true;
 }

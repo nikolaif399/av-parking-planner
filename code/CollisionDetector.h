@@ -4,6 +4,7 @@
 #include <memory.h>
 #include <math.h>
 #include <limits> // for infinity
+#include <algorithm> // for min
 #include "planner_utils.h"
 
 class CollisionDetector {
@@ -13,6 +14,9 @@ public:
 
   // True means collision, false means free
   bool checkCollision(State state);
+
+  // True means collision interpolating from q1 to q2, false means free
+  bool checkCollisionLine(State q1, State q2, int N);
 
   static std::vector<std::pair<int,int>> raster_line(double x0, double y0, double x1, double y1);
 private:

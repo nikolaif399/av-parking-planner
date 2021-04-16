@@ -3,6 +3,7 @@
 
 #include <math.h>
 #include <vector>
+#include "mex.h"
 
 #define GETMAPINDEX(X, Y, XSIZE, YSIZE) (Y*XSIZE + X)
 
@@ -14,15 +15,31 @@
 #define	MIN(A, B)	((A) < (B) ? (A) : (B))
 #endif
 
-
 typedef std::vector<double> State;
 
+// Get a random double between min and max
 inline double GetRand(double min, double max) {
   return min + (max - min) * (double) rand()/RAND_MAX;
 }
 
-// Get state 
-inline State get_intermediate_state(State q1, State q2, double r) {
+/* Returns distance between states, used in nearest neighbors search */
+inline double StateDistance(State q1, State q2) {
+  double d = 0;
+
+  for (int i  = 0; i < q1.size(); ++i) {
+    d += MIN(abs(q1[i] - q2[i]),abs(q1[i] - q2[i]));
+  }
+  d /= q1.size();
+
+  return d;
+}
+
+/* Get intermediate state between q1 and q2 (r is the ratio along that vector
+  r = 0 will return q1
+  r = 0.5 will return halfway between q1 and q2
+  r = 1 with return q2, etc
+  */
+inline State GetIntermediateState(State q1, State q2, double r) {
   State q_interm(q1.size());
 
   for (int i = 0; i < q1.size(); ++i) {
