@@ -53,7 +53,6 @@ std::vector<State> MultiGoalRRTConnect::plan(State start_state, State goal_state
   
   // RRT-Connect iterations
   for (int i = 0; i < k_; ++i) { 
-    printf("Iteration %d\n", i);
 
     // Draw a random valid sample from the state space
     State q_sample = this->random_valid_sample();
@@ -70,22 +69,48 @@ std::vector<State> MultiGoalRRTConnect::plan(State start_state, State goal_state
       int new_index_connect;
       this->connect(q_new, ret_flag, new_index_connect);
 
-      /*printf("Sampled state: \n");
-      PrintState(q_sample);
-      printf("New state: \n");
-      PrintState(q_new);*/
-
       // If connect reached, we have a path from start to goal!
       // Compute the index of the midpoint state in both trees
       if (ret_flag == REACHED) {
         printf("Reached goal!!\n");
-        printf("Connected through: \n");
-        PrintState(q_new);
+
+        int start_ind_mid,goal_ind_mid;
+        if (cur_equal_start_) {
+          start_ind_mid = new_index_extend;
+          goal_ind_mid = new_index_connect;
+        }
+        else {
+          start_ind_mid = new_index_connect;
+          goal_ind_mid = new_index_extend;
+        }
 
         // Found plan, exit
         std::vector<State> plan;
 
-        return plan;
+         // Compute plan from start to midpoint through start tree
+        std::vector<State> plan_states_start = this->tree_start_->getPath(start_ind, start_ind_mid);
+        
+        // Compute plan from goal to midpoint through goal tree
+        std::vector<State> plan_states_goal = this->tree_goal_->getPath(goal_ind, goal_ind_mid);
+        
+        // Flip path through goal tree
+        std::reverse(plan_states_goal.begin(), plan_states_goal.end());
+
+        // Concatenate start -> midpoint path with midpoint -> goal path
+        std::vector<State> plan_states;
+        plan_states.insert(plan_states.begin(), plan_states_start.begin(), plan_states_start.end());
+        plan_states.insert(plan_states.end(), plan_states_goal.begin(), plan_states_goal.end());
+        printf("Raw plan size: %zu\n", plan_states.size());
+
+        //return plan_states;
+        //Remove shortcuttable states
+        plan_states = this->shortcutPath(plan_states);
+        printf("Plan size after shortcutting: %zu\n", plan_states.size());
+
+        // Interpolate along path to get smooth trajectory
+        plan_states = this->interpolatePath(plan_states);
+        printf("Plan size after interpolating: %zu\n", plan_states.size());
+        return plan_states;
       }
     }
 
@@ -116,13 +141,6 @@ void MultiGoalRRTConnect::extend(State q_sample, std::shared_ptr<Tree> tree_exte
   State q_nearest = tree_extending_from->getState(nearest_index);
   std::pair<State,bool> new_state = this->get_new_state(q_nearest,q_sample,eps_);
   State q_new = new_state.first;
-
-  /*printf("Q nearest: ");
-  PrintState(q_nearest);
-
-  printf("Q new: ");
-  PrintState(q_new);*/
-  
 
   // Check for collision using twenty intermediate states (can be increased if cutting through obstacles)
   if(!collision_detector_->checkCollisionLine(q_nearest, q_new, 20)) {
@@ -172,7 +190,7 @@ State MultiGoalRRTConnect::random_valid_sample() {
 }
 
 std::vector<State> MultiGoalRRTConnect::interpolatePath(std::vector<State> plan_states) {
-  int N = 25;
+  int N = 5;
 
   std::vector<State> new_path;
   int num_points;
@@ -202,7 +220,7 @@ std::vector<State> MultiGoalRRTConnect::shortcutPath(std::vector<State> plan_sta
 
     for (int comp_ind = plan_states.size() - 1; comp_ind >= 0; comp_ind--) {
       State comp = plan_states.at(comp_ind);
-      if (collision_detector_->checkCollisionLine(active,comp,500)) {
+      if (!collision_detector_->checkCollisionLine(active,comp,500)) {
         // Shorter collision free path found!
         new_path.push_back(comp);
         if (comp_ind == plan_states.size() - 1) {
