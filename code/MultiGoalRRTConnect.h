@@ -5,16 +5,34 @@
 #include <memory>
 #include "planner_utils.h"
 #include "CollisionDetector.h"
+#include "tree.h"
+
+#define REACHED 0
+#define ADVANCED 1
+#define TRAPPED 2
 
 class MultiGoalRRTConnect {
+
 public:
-  MultiGoalRRTConnect(double vehicle_length, double vehicle_width, int x_size, int y_size, bool* occupancy_grid, double cell_size);
+  MultiGoalRRTConnect(double vehicle_length, double vehicle_width, int x_size, int y_size, bool* occupancy_grid, double cell_size, int k, double eps);
   ~MultiGoalRRTConnect() = default;
 
   std::vector<State> plan(State start_state, State goal_state);
   std::vector<State> planSimple(State start_state, State goal_state);
+  std::shared_ptr<Tree> tree_start_;
+
+  std::shared_ptr<Tree> tree_goal_;
 
 private:
+  /* Primary extend function
+  tries to extend tree_extending_from towards q_sample
+  returns success flag as well as index of new state in tree if successful
+  */
+  void extend(State q_sample, std::shared_ptr<Tree> tree_extending_from, int& ret_flag, int& new_index);
+
+  // RRT-Connect Connect Function from class notes
+  void connect(State q_new, int& ret_flag, int& new_index);
+
   /* Get new state to add to tree
     if the distance from q1 to q2 is less than eps, this just returns q2
     else it returns the point eps distance along the vector from q1 to q2
@@ -35,6 +53,19 @@ private:
   int x_size_;
   int y_size_;
   double cell_size_;
+
+  // Number of variables in state
+  int state_size_;
+
+  // Number of RRT iterations
+  int k_;
+
+  // RRT Extent
+  double eps_;
+
+  // Temporary, will need updated for multi goals
+  std::shared_ptr<Tree> cur_tree_,other_tree_;
+  bool cur_equal_start_;
 
   std::shared_ptr<CollisionDetector> collision_detector_;
 

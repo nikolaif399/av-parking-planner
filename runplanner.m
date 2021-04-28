@@ -11,7 +11,7 @@ vehicleDims = [4,2]; % length, width
 
 % Call planner here
 startState = [10;5;0;0;0];
-goalState = [57.5;45;pi/2;0;0];
+goalState = [30;5;0;0;0];
 [planStates,planLength] = planner(startState,goalState,vehicleDims,combinedMap',costmap.CellSize);
 
 animateTrajectory(costmap,planStates,vehicleDims);

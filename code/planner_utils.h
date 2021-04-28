@@ -17,6 +17,15 @@
 
 typedef std::vector<double> State;
 
+// Print out a state
+inline void PrintState(State s) {
+  printf("State: [");
+  for (int i = 0; i < s.size()-1; ++i) {
+    printf("%.2f, ", s.at(i));
+  }
+  printf("%.2f]\n", s.back());
+}
+
 // Get a random double between min and max
 inline double GetRand(double min, double max) {
   return min + (max - min) * (double) rand()/RAND_MAX;
@@ -27,7 +36,7 @@ inline double StateDistance(State q1, State q2) {
   double d = 0;
 
   for (int i  = 0; i < q1.size(); ++i) {
-    d += MIN(abs(q1[i] - q2[i]),abs(q1[i] - q2[i]));
+    d += abs(q1[i] - q2[i]);
   }
   d /= q1.size();
 

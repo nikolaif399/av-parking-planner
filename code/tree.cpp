@@ -53,7 +53,7 @@ std::vector<int> Tree::getNeighborVertices(State q, double epsilon) {
   }
   return neighbors;
 }
-
+/*
 void Tree::saveTree(int x_size, std::string filename) {
   printf("Saving tree to text file... ");
 
@@ -83,6 +83,7 @@ void Tree::saveTree(int x_size, std::string filename) {
   treeFile.close();
   printf("done.\n");
 }
+*/
 
 std::vector<State> Tree::getPath(int start_index, int goal_index) {
   printf("Backtracking path through tree... ");

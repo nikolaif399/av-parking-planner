@@ -9,7 +9,7 @@
 #include <fstream>
 #include <bits/stdc++.h>
 
-#include "helpers.h"
+#include "planner_utils.h"
 
 class Tree {
 public:
@@ -27,7 +27,9 @@ public:
 
   State getState(int index); 
 
-  void saveTree(int x_size, std::string filename);
+  // void saveTree(int x_size, std::string filename);
+
+  void debugPrint();
 
   std::vector<State> getPath(int start_index, int goal_index);
 

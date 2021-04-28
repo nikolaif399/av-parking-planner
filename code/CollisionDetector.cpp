@@ -10,16 +10,17 @@ CollisionDetector::CollisionDetector(double vehicle_length, double vehicle_width
 
   occupancy_grid_ = new bool[x_size_ * y_size_];
   memcpy(occupancy_grid_, occupancy_grid, x_size_ * y_size_ * sizeof(bool));
-  printf("Occupancy map size: x = %d, y = %d\n", x_size, y_size_);
+  //printf("Occupancy map size: x = %d, y = %d\n", x_size, y_size_);
   int occupied_cells = 0;
   for (int i = 0; i < x_size*y_size; ++i) {
     if (occupancy_grid_[i]) occupied_cells++;
   }
-  printf("Grid cells occupied: %d/%d (%.1f%%)\n", occupied_cells, x_size*y_size, static_cast<double>(occupied_cells)/x_size/y_size*100.0);
-  int index_test = GETMAPINDEX(79,90,x_size_,y_size_);
-  printf("39.5,45 colliding?: %d\n", occupancy_grid[index_test]);
+  //printf("Grid cells occupied: %d/%d (%.1f%%)\n", occupied_cells, x_size*y_size, static_cast<double>(occupied_cells)/x_size/y_size*100.0);
+  //int index_test = GETMAPINDEX(79,90,x_size_,y_size_);
+  //printf("39.5,45 colliding?: %d\n", occupancy_grid[index_test]);
   cell_size_ = cell_size;
 
+  /*
   for (int x = 0; x < x_size; ++x) {
     for (int y = 0; y < y_size; ++y) {
       int index_test = GETMAPINDEX(x,y,x_size_,y_size_);
@@ -32,6 +33,7 @@ CollisionDetector::CollisionDetector(double vehicle_length, double vehicle_width
     }
     printf("\n");
   }
+  */
 }
 
 CollisionDetector::~CollisionDetector() {
@@ -143,6 +145,21 @@ bool CollisionDetector::checkCollision(State state) {
   x4 /= cell_size_;
   y4 /= cell_size_;
 
+  // Minimum and maximum values must lie at a corner
+  int xmin = std::min({x1,x2,x3,x4});
+  int xmax = std::max({x1,x2,x3,x4});
+  int ymin = std::min({y1,y2,y3,y4});
+  int ymax = std::max({y1,y2,y3,y4});
+
+  // Check boundary conditions
+  if (xmin < 0 || xmax >= x_size_) {
+    return false;
+  }
+
+  if (ymin < 0 || ymax >= y_size_) {
+    return false;
+  }
+
   // Compute all indices along the border of the car
   std::vector<Coord> edge_indices;
 
@@ -162,10 +179,6 @@ bool CollisionDetector::checkCollision(State state) {
   //printf("L41 Found %d coords between (%f,%f) and (%f,%f).\n", l41_coords.size(),x4,y4,x1,y1);
   edge_indices.insert(edge_indices.end(), l41_coords.begin(), l41_coords.end());
 
-  // Minimum and maximum values must lie at a corner
-  int xmin = std::min({x1,x2,x3,x4});
-  int xmax = std::max({x1,x2,x3,x4});
-
   //printf("Xmin: %d\n", xmin);
   //printf("Xmax: %d\n", xmax);
 
@@ -177,9 +190,13 @@ bool CollisionDetector::checkCollision(State state) {
 
   for (auto coord : edge_indices) {
     int xind = coord.first - xmin;
+    if (xind < 0) {
+      return false;
+    }
     ymins.at(xind) = std::min(coord.second, ymins.at(xind));
     ymaxs.at(xind) = std::max(coord.second, ymaxs.at(xind));
   }
+
   
   for (int x = xmin; x <= xmax; ++x) {
     int xind = x - xmin;
@@ -189,12 +206,11 @@ bool CollisionDetector::checkCollision(State state) {
       int index_test = GETMAPINDEX(x,y,x_size_,y_size_);
  
       if (occupancy_grid_[index_test]) {
-        printf("(%d,%d) colliding (grid space) -> (%f,%f) in state space\n",x,y,x*cell_size_,y*cell_size_);
+        //printf("(%d,%d) colliding (grid space) -> (%f,%f) in state space\n",x,y,x*cell_size_,y*cell_size_);
         return true; // Collision
       }
     }
   }
-
   return false;
 }
 
