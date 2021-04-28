@@ -65,7 +65,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
   //printf("Cell size: %f\n", cell_size);
 
   // call the planner
-  int k = 100;
+  int k = 1000;
   double eps = 5;
   MultiGoalRRTConnect planner(vehicle_length, vehicle_width, x_size, y_size, occupancy_grid, cell_size, k, eps);
   std::vector<State> plan = planner.plan(start_state, goal_state);

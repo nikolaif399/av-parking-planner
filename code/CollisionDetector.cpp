@@ -153,11 +153,11 @@ bool CollisionDetector::checkCollision(State state) {
 
   // Check boundary conditions
   if (xmin < 0 || xmax >= x_size_) {
-    return false;
+    return true;
   }
 
   if (ymin < 0 || ymax >= y_size_) {
-    return false;
+    return true;
   }
 
   // Compute all indices along the border of the car
@@ -191,7 +191,7 @@ bool CollisionDetector::checkCollision(State state) {
   for (auto coord : edge_indices) {
     int xind = coord.first - xmin;
     if (xind < 0) {
-      return false;
+      return true;
     }
     ymins.at(xind) = std::min(coord.second, ymins.at(xind));
     ymaxs.at(xind) = std::max(coord.second, ymaxs.at(xind));
@@ -222,8 +222,8 @@ bool CollisionDetector::checkCollisionLine(State q1, State q2, int N = 100) {
   for (int i = 0; i <= numPoints; ++i) {
     double r = static_cast<double>(i)/static_cast<double>(numPoints);
     State q = GetIntermediateState(q1,q2,r);
-    if (this->checkCollision(q)) return false;
+    if (this->checkCollision(q)) return true;
   }
 
-  return true;
+  return false;
 }

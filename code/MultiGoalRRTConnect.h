@@ -53,10 +53,7 @@ private:
   int x_size_;
   int y_size_;
   double cell_size_;
-
-  // Number of variables in state
-  int state_size_;
-
+  
   // Number of RRT iterations
   int k_;
 

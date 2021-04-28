@@ -58,24 +58,29 @@ std::vector<State> MultiGoalRRTConnect::plan(State start_state, State goal_state
     // Draw a random valid sample from the state space
     State q_sample = this->random_valid_sample();
 
-    //q_sample = {11,5,0};
-    PrintState(q_sample);
+    //PrintState(q_sample);
 
     // Try to extend the current tree towards to the new sample
     int ret_flag,new_index_extend;
-
     this->extend(q_sample, cur_tree_, ret_flag, new_index_extend);
 
     // If not trapped, try to connect to other tree
     if (ret_flag != TRAPPED) {
-      int new_index_connect;
       State q_new = cur_tree_->getState(new_index_extend);
+      int new_index_connect;
       this->connect(q_new, ret_flag, new_index_connect);
+
+      /*printf("Sampled state: \n");
+      PrintState(q_sample);
+      printf("New state: \n");
+      PrintState(q_new);*/
 
       // If connect reached, we have a path from start to goal!
       // Compute the index of the midpoint state in both trees
       if (ret_flag == REACHED) {
         printf("Reached goal!!\n");
+        printf("Connected through: \n");
+        PrintState(q_new);
 
         // Found plan, exit
         std::vector<State> plan;
@@ -116,8 +121,8 @@ void MultiGoalRRTConnect::extend(State q_sample, std::shared_ptr<Tree> tree_exte
   PrintState(q_nearest);
 
   printf("Q new: ");
-  PrintState(q_new);
-  */
+  PrintState(q_new);*/
+  
 
   // Check for collision using twenty intermediate states (can be increased if cutting through obstacles)
   if(!collision_detector_->checkCollisionLine(q_nearest, q_new, 20)) {

@@ -35,10 +35,10 @@ inline double GetRand(double min, double max) {
 inline double StateDistance(State q1, State q2) {
   double d = 0;
 
-  for (int i  = 0; i < q1.size(); ++i) {
+  // Just manhattan distance for now
+  for (int i  = 0; i < 2; ++i) {
     d += abs(q1[i] - q2[i]);
   }
-  d /= q1.size();
 
   return d;
 }
