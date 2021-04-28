@@ -1,11 +1,15 @@
 function [] = animateTrajectory(costmap,planStates,vehicleDims)
 frameRate = 60;
 
-v = VideoWriter('planner');
-v.FrameRate = frameRate;
-v.open()
+record = 0;
+if (record)
+    v = VideoWriter('planner');
+    v.FrameRate = frameRate;
+    v.open()
+end
 
-figure(1)
+fig = figure('units','normalized','outerposition',[0 0 1 1],'color','white'); 
+
 plot(costmap, 'Inflation', 'off')
 impixelinfo;
 legend off
@@ -58,13 +62,17 @@ for i = 1:size(planStates,1)
     rot=makehgtform('zrotate',theta);
     set(g,'Matrix',trans*rot);
     
-    
-    writeVideo(v,getframe(gcf));
+    if (record)
+        writeVideo(v,getframe(gcf));
+    end
     
     %plot(x,y, 'c-');
     pause(1/frameRate);
 end
-v.close();
+
+if (record)
+    v.close();
+end
 
 end
 
