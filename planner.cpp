@@ -38,15 +38,28 @@ void mexFunction( int nlhs, mxArray *plhs[],
   double* start_array = mxGetPr(START_IN);
   State start_state (start_array, start_array + state_size);
 
-  if (state_size != MAX(mxGetM(GOAL_IN), mxGetN(GOAL_IN))){
+  int num_goal_states = mxGetM(GOAL_IN);
+  if (state_size != mxGetN(GOAL_IN)){
             mexErrMsgIdAndTxt( "MATLAB:planner:invalidstatesize",
               "statesize of goalstate is different from startstate");         
   }
+  mexPrintf("Received %d possible goal states\n", num_goal_states);
   double* goal_array = mxGetPr(GOAL_IN);
-  State goal_state (goal_array, goal_array + state_size);
+
+  std::vector<State> goal_states(num_goal_states);
+  
+  for (int i = 0; i < num_goal_states; ++i) {
+    goal_states.at(i).resize(state_size);
+    for (int j = 0; j < state_size; ++j){
+      goal_states.at(i).at(j) = goal_array[j*num_goal_states + i];
+    }
+  }
+
+  State goal_state = goal_states.back();
+  PrintState(goal_state);
 
   // get the vehicle dimensions
-  int vehicle_dims_size = (int) (MAX(mxGetM(VEHICLE_DIMS_IN), mxGetN(VEHICLE_DIMS_IN)));
+  int vehicle_dims_size = (int) MAX(mxGetN(VEHICLE_DIMS_IN),mxGetM(VEHICLE_DIMS_IN));
   if (vehicle_dims_size != 2){
             mexErrMsgIdAndTxt( "MATLAB:planner:invalid_vehicle_dims_size",
               "vehicle dims should be of size 2 (length,width)");         
@@ -68,10 +81,10 @@ void mexFunction( int nlhs, mxArray *plhs[],
   int k = 10000;
   double eps = 5;
   MultiGoalRRTConnect planner(vehicle_length, vehicle_width, x_size, y_size, occupancy_grid, cell_size, k, eps);
-  std::vector<State> plan = planner.plan(start_state, goal_state);
+  std::vector<State> plan = planner.plan(start_state, goal_states);
 
   int planlength = plan.size();
-  printf("planner returned plan of length %d\n", planlength); 
+  mexPrintf("planner returned plan of length %d\n", planlength); 
 
   // Create output plan
   PLAN_OUT = mxCreateNumericMatrix( (mwSize)planlength, (mwSize)state_size, mxDOUBLE_CLASS, mxREAL); 

@@ -6,6 +6,7 @@
 #include "planner_utils.h"
 #include "CollisionDetector.h"
 #include "tree.h"
+#include "reeds_shepp.h"
 
 #define REACHED 0
 #define ADVANCED 1
@@ -17,11 +18,11 @@ public:
   MultiGoalRRTConnect(double vehicle_length, double vehicle_width, int x_size, int y_size, bool* occupancy_grid, double cell_size, int k, double eps);
   ~MultiGoalRRTConnect() = default;
 
-  std::vector<State> plan(State start_state, State goal_state);
-  std::vector<State> planSimple(State start_state, State goal_state);
-  std::shared_ptr<Tree> tree_start_;
+  std::vector<State> plan(State start_state, std::vector<State> goal_states);
 
-  std::shared_ptr<Tree> tree_goal_;
+  std::shared_ptr<Tree> start_tree_;
+  
+  std::vector<std::shared_ptr<Tree>> goal_trees_;
 
 private:
   /* Primary extend function
@@ -71,6 +72,9 @@ private:
 
   // State upper bound
   State state_hi_;
+
+  // Reeds shepp state connector
+  std::shared_ptr<ReedsSheppStateSpace> state_connector_;
 };
 
 #endif

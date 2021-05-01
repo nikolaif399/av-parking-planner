@@ -11,45 +11,31 @@ MultiGoalRRTConnect::MultiGoalRRTConnect(double vehicle_length, double vehicle_w
   k_ = k;
   eps_ = eps;
 
+  start_tree_ = std::make_shared<Tree>(state_lo_.size());
+  cur_tree_ = start_tree_;
+  cur_equal_start_ = true;
+
   state_lo_ = {0,0,-M_PI};
   state_hi_ = {x_size*cell_size,y_size*cell_size,M_PI};
-
-  tree_start_ = std::make_shared<Tree>(state_lo_.size());
-  tree_goal_ = std::make_shared<Tree>(state_lo_.size());
-
-  cur_tree_ = tree_start_;
-  cur_equal_start_ = true;
-  other_tree_ = tree_goal_;
-
-  collision_detector_ = std::make_shared<CollisionDetector>(vehicle_length, vehicle_width, x_size, y_size, occupancy_grid, cell_size);
-}
-
-// Simple plan just to test mex bindings
-std::vector<State> MultiGoalRRTConnect::planSimple(State start_state, State goal_state) {
-
-	// Arbitrary plan to test mex bindings
-  int plan_length = 200;
-  std::vector<State> plan(plan_length);
-
-  // Just interpolate from start to goal
-  for (int i = 0; i < plan.size(); ++i) {
-    plan.at(i) = GetIntermediateState(start_state,goal_state,(double)i/(plan_length-1));
-    bool collision = collision_detector_->checkCollision(plan.at(i));
-    //printf("Collision at index %d : %d\n", i, collision);
-    plan.at(i).back() = collision ? 1 : 0;
-  }
-
-  return plan;
-}
-
-// Implement main plan here
-std::vector<State> MultiGoalRRTConnect::plan(State start_state, State goal_state) {
   
-  // Add start state to start tree
-  int start_ind = tree_start_->addVertex(start_state);
+  collision_detector_ = std::make_shared<CollisionDetector>(vehicle_length, vehicle_width, x_size, y_size, occupancy_grid, cell_size);
+  state_connector_ = std::make_shared<ReedsSheppStateSpace>(1); // Turning radius
+}
 
-  // Add goal state to goal tree
-  int goal_ind = tree_goal_->addVertex(goal_state);
+// Implement main planner here
+std::vector<State> MultiGoalRRTConnect::plan(State start_state, std::vector<State> goal_states) {
+
+  // Add start state to start tree
+  int start_ind = start_tree_->addVertex(start_state);
+
+  // Create one goal tree for each of the goal states
+  std::vector<int> goal_inds;
+  for (int i = 0; i < goal_states.size(); ++i) {
+    goal_trees_.push_back(std::make_shared<Tree>(state_lo_.size()));
+    goal_inds.push_back(goal_trees_.back()->addVertex(goal_states.at(i)));
+  }
+  
+  other_tree_ = goal_trees_.front();
   
   // RRT-Connect iterations
   for (int i = 0; i < k_; ++i) { 
@@ -88,10 +74,10 @@ std::vector<State> MultiGoalRRTConnect::plan(State start_state, State goal_state
         std::vector<State> plan;
 
          // Compute plan from start to midpoint through start tree
-        std::vector<State> plan_states_start = this->tree_start_->getPath(start_ind, start_ind_mid);
+        std::vector<State> plan_states_start = this->start_tree_->getPath(start_ind, start_ind_mid);
         
         // Compute plan from goal to midpoint through goal tree
-        std::vector<State> plan_states_goal = this->tree_goal_->getPath(goal_ind, goal_ind_mid);
+        std::vector<State> plan_states_goal = this->goal_trees_.front()->getPath(goal_inds.front(), goal_ind_mid);
         
         // Flip path through goal tree
         std::reverse(plan_states_goal.begin(), plan_states_goal.end());
