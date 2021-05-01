@@ -15,9 +15,14 @@ cellsize = 0.5; % meters
 combinedMapBin = boolean(im2single(combinedMap));
 
 % Call planner here
+
 startState = [12.5 12.5 0];
-goalStates = [36 45 pi/2;
-             45 5 -pi/2];
+startState = [65 37.5 0];
+
+goalStates = [14 45 pi/2;
+              14 5 -pi/2
+              36 45 pi/2;
+              45 5 -pi/2];
 
 tic
 [planStates,planLength] = planner(startState,goalStates,vehicleDims,combinedMapBin',cellsize);
