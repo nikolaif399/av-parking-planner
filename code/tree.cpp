@@ -26,7 +26,6 @@ State Tree::getState(int index){
   if (states_.find(index) == states_.end()) {
     printf("Tree::getState, Index %d not in tree\n", index);
   }
-
   return states_[index];
 }
 

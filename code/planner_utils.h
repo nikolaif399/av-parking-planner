@@ -5,7 +5,7 @@
 #include <vector>
 #include "mex.h"
 #include <iostream>
-#include "code/reeds_shepp.h"
+#include "reeds_shepp.h"
 
 #define GETMAPINDEX(X, Y, XSIZE, YSIZE) (Y*XSIZE + X)
 
