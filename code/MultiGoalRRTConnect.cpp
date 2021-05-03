@@ -17,8 +17,8 @@ MultiGoalRRTConnect::MultiGoalRRTConnect(double vehicle_length, double vehicle_w
   cur_tree_ = start_tree_;
   cur_equal_start_ = true;
 
-  state_lo_ = {0,0,-2*M_PI};
-  state_hi_ = {x_size*cell_size,y_size*cell_size,2*M_PI};
+  state_lo_ = {0,0,-M_PI/2};
+  state_hi_ = {x_size*cell_size,y_size*cell_size,M_PI/2};
   
   collision_detector_ = std::make_shared<CollisionDetector>(vehicle_length, vehicle_width, x_size, y_size, occupancy_grid, cell_size);
   state_connector_ = std::make_shared<ReedsSheppStateSpace>(1); // Turning radius
@@ -134,8 +134,7 @@ void MultiGoalRRTConnect::extend(State q_sample, std::shared_ptr<Tree> tree_exte
   State q_new = new_state.first;
   // cout<<"checking for collisions"<<endl;
   // Check for collision using twenty intermediate states (can be increased if cutting through obstacles)
-  if(!collision_detector_->checkCollisionLine(q_nearest, q_new, 4)) {
-    printf("Collision free!");
+  if(!collision_detector_->checkCollisionLine(q_nearest, q_new, 80)) {
     ret_flag = new_state.second ? REACHED : ADVANCED;
     new_index = tree_extending_from->addVertex(q_new);
     tree_extending_from->addEdge(nearest_index, new_index);
