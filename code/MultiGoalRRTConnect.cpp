@@ -17,8 +17,8 @@ MultiGoalRRTConnect::MultiGoalRRTConnect(double vehicle_length, double vehicle_w
   cur_tree_ = start_tree_;
   cur_equal_start_ = true;
 
-  state_lo_ = {0,0,-M_PI};
-  state_hi_ = {x_size*cell_size,y_size*cell_size,M_PI};
+  state_lo_ = {0,0,-2*M_PI};
+  state_hi_ = {x_size*cell_size,y_size*cell_size,2*M_PI};
   
   collision_detector_ = std::make_shared<CollisionDetector>(vehicle_length, vehicle_width, x_size, y_size, occupancy_grid, cell_size);
   state_connector_ = std::make_shared<ReedsSheppStateSpace>(1); // Turning radius
@@ -26,7 +26,7 @@ MultiGoalRRTConnect::MultiGoalRRTConnect(double vehicle_length, double vehicle_w
 
 // Implement main planner here
 std::vector<State> MultiGoalRRTConnect::plan(State start_state, std::vector<State> goal_states) {
-
+  cout<<"I am here"<<endl;
   // Add start state to start tree
   int start_ind = start_tree_->addVertex(start_state);
 
@@ -38,23 +38,28 @@ std::vector<State> MultiGoalRRTConnect::plan(State start_state, std::vector<Stat
   }
   
   other_tree_ = goal_trees_.front();
-  
+
+
   // RRT-Connect iterations
   for (int i = 0; i < k_; ++i) { 
 
     // Draw a random valid sample from the state space
     State q_sample = this->random_valid_sample();
 
-    //PrintState(q_sample);
+    // PrintState(q_sample);
 
     // Try to extend the current tree towards to the new sample
     int ret_flag,new_index_extend;
+    // cout<<"before extending"<<endl;
     this->extend(q_sample, cur_tree_, ret_flag, new_index_extend);
 
+    // cout<<"after extending"<<endl;
+    // cout<<"ret flag is"<<ret_flag<<endl;
     // If not trapped, try to connect to other tree
     if (ret_flag != TRAPPED) {
       State q_new = cur_tree_->getState(new_index_extend);
       int new_index_connect;
+
       this->connect(q_new, ret_flag, new_index_connect);
 
       // If connect reached, we have a path from start to goal!
@@ -77,7 +82,7 @@ std::vector<State> MultiGoalRRTConnect::plan(State start_state, std::vector<Stat
 
          // Compute plan from start to midpoint through start tree
         std::vector<State> plan_states_start = this->start_tree_->getPath(start_ind, start_ind_mid);
-        
+        cout<<"Size"<<plan_states_start.size()<<endl;
         // Compute plan from goal to midpoint through goal tree
         std::vector<State> plan_states_goal = this->goal_trees_.front()->getPath(goal_inds.front(), goal_ind_mid);
         
@@ -90,10 +95,10 @@ std::vector<State> MultiGoalRRTConnect::plan(State start_state, std::vector<Stat
         plan_states.insert(plan_states.end(), plan_states_goal.begin(), plan_states_goal.end());
         printf("Raw plan size: %zu\n", plan_states.size());
 
-        //return plan_states;
-        //Remove shortcuttable states
-        plan_states = this->shortcutPath(plan_states);
-        printf("Plan size after shortcutting: %zu\n", plan_states.size());
+        // return plan_states;
+        // Remove shortcuttable states
+        // plan_states = this->shortcutPath(plan_states);
+        // printf("Plan size after shortcutting: %zu\n", plan_states.size());
 
         // Interpolate along path to get smooth trajectory
         plan_states = this->interpolatePath(plan_states);
@@ -109,7 +114,6 @@ std::vector<State> MultiGoalRRTConnect::plan(State start_state, std::vector<Stat
     cur_equal_start_ = !cur_equal_start_;
   }
   std::vector<State> plan;
-
   return plan;
 }
 
@@ -120,6 +124,7 @@ void MultiGoalRRTConnect::extend(State q_sample, std::shared_ptr<Tree> tree_exte
   // Couldn't find new point to extend towards goal
   if (nearest_index == -1) {
     ret_flag = TRAPPED;
+    cout<<"Trapped"<<endl;
     return;
   }
   
@@ -127,10 +132,10 @@ void MultiGoalRRTConnect::extend(State q_sample, std::shared_ptr<Tree> tree_exte
   State q_nearest = tree_extending_from->getState(nearest_index);
   std::pair<State,bool> new_state = this->get_new_state(q_nearest,q_sample,eps_);
   State q_new = new_state.first;
-
+  // cout<<"checking for collisions"<<endl;
   // Check for collision using twenty intermediate states (can be increased if cutting through obstacles)
-  if(!collision_detector_->checkCollisionLine(q_nearest, q_new, 20)) {
-    //printf("Collision free!")
+  if(!collision_detector_->checkCollisionLine(q_nearest, q_new, 4)) {
+    printf("Collision free!");
     ret_flag = new_state.second ? REACHED : ADVANCED;
     new_index = tree_extending_from->addVertex(q_new);
     tree_extending_from->addEdge(nearest_index, new_index);

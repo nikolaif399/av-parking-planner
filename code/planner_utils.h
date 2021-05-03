@@ -6,6 +6,7 @@
 #include "mex.h"
 #include <iostream>
 #include "reeds_shepp.h"
+using namespace std;
 
 #define GETMAPINDEX(X, Y, XSIZE, YSIZE) (Y*XSIZE + X)
 
@@ -51,7 +52,7 @@ inline double StateDistance(State q1, State q2) {
     Q2[i] = q2[i];
   }
 
-  ReedsSheppStateSpace rs_ = ReedsSheppStateSpace(1);
+  ReedsSheppStateSpace rs_ = ReedsSheppStateSpace(.04);
   ReedsSheppStateSpace::ReedsSheppPath rspath_ = rs_.reedsShepp(Q1,Q2);
   double d = rspath_.length();
   return d;
@@ -81,7 +82,7 @@ inline State GetIntermediateState(State q1, State q2, double ratio) {
     Q2[i] = q2[i];
   }
 
-  ReedsSheppStateSpace rs_ = ReedsSheppStateSpace(1);
+  ReedsSheppStateSpace rs_ = ReedsSheppStateSpace(.04);
   ReedsSheppStateSpace::ReedsSheppPath rspath_ = rs_.reedsShepp(Q1,Q2);
 
   double r_ = 0;
@@ -89,7 +90,7 @@ inline State GetIntermediateState(State q1, State q2, double ratio) {
   
   while (r_ < ratio*rspath_.length()) {
     rs_.interpolate(Q1,rspath_, r_, interpolated_state_);
-    r_ += 0.05;
+    r_ += 0.1;
   }
 
   for (int i = 0; i < 3; i++) {
