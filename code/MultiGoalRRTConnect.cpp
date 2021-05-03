@@ -17,11 +17,11 @@ MultiGoalRRTConnect::MultiGoalRRTConnect(double vehicle_length, double vehicle_w
   cur_tree_ = start_tree_;
   cur_equal_start_ = true;
 
-  state_lo_ = {0,0,-M_PI/2};
-  state_hi_ = {x_size*cell_size,y_size*cell_size,M_PI/2};
+  state_lo_ = {0,0,-M_PI};
+  state_hi_ = {x_size*cell_size,y_size*cell_size,M_PI};
   
   collision_detector_ = std::make_shared<CollisionDetector>(vehicle_length, vehicle_width, x_size, y_size, occupancy_grid, cell_size);
-  state_connector_ = std::make_shared<ReedsSheppStateSpace>(1); // Turning radius
+  state_connector_ = std::make_shared<ReedsSheppStateSpace>(.1); // Turning radius
 }
 
 // Implement main planner here
@@ -97,8 +97,8 @@ std::vector<State> MultiGoalRRTConnect::plan(State start_state, std::vector<Stat
 
         // return plan_states;
         // Remove shortcuttable states
-        // plan_states = this->shortcutPath(plan_states);
-        // printf("Plan size after shortcutting: %zu\n", plan_states.size());
+        plan_states = this->shortcutPath(plan_states);
+        printf("Plan size after shortcutting: %zu\n", plan_states.size());
 
         // Interpolate along path to get smooth trajectory
         plan_states = this->interpolatePath(plan_states);
@@ -134,7 +134,7 @@ void MultiGoalRRTConnect::extend(State q_sample, std::shared_ptr<Tree> tree_exte
   State q_new = new_state.first;
   // cout<<"checking for collisions"<<endl;
   // Check for collision using twenty intermediate states (can be increased if cutting through obstacles)
-  if(!collision_detector_->checkCollisionLine(q_nearest, q_new, 80)) {
+  if(!collision_detector_->checkCollisionLine(q_nearest, q_new, 20)) {
     ret_flag = new_state.second ? REACHED : ADVANCED;
     new_index = tree_extending_from->addVertex(q_new);
     tree_extending_from->addEdge(nearest_index, new_index);
@@ -180,7 +180,7 @@ State MultiGoalRRTConnect::random_valid_sample() {
 }
 
 std::vector<State> MultiGoalRRTConnect::interpolatePath(std::vector<State> plan_states) {
-  int N = 5;
+  int N = 20;
 
   std::vector<State> new_path;
   int num_points;
