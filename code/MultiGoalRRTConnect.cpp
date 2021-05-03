@@ -1,5 +1,5 @@
 #include "MultiGoalRRTConnect.h"
-#include "code/reeds_shepp.h"
+#include "reeds_shepp.h"
 #include <iostream>
 using namespace std;
 
@@ -218,6 +218,5 @@ std::vector<State> MultiGoalRRTConnect::shortcutPath(std::vector<State> plan_sta
     }
     i++;
   }
-  
   return new_path;
 }
