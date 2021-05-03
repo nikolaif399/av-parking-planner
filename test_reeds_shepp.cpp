@@ -24,11 +24,11 @@ int main(int argc, char** argv) {
   vector<vector<double>> smooth_path;
   while (r < rspath.length()) {
     rs.interpolate(start,rspath, r, interpolated_state);
-    vector<double> is;
+    vector<double> is2;
     for (int i = 0 ; i < 3 ; i++){
-      is.push_back(interpolated_state[i]);
+      is2.push_back(interpolated_state[i]);
     }
-    smooth_path.push_back(is);
+    smooth_path.push_back(is2);
     r += 0.1;
   }
   
