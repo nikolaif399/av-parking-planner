@@ -88,7 +88,7 @@ inline State GetIntermediateState(State q1, State q2, double ratio) {
   double interpolated_state_[3];
   
   while (r_ < ratio*rspath_.length()) {
-    rs.interpolate(Q1,rspath_, r_, interpolated_state_);
+    rs_.interpolate(Q1,rspath_, r_, interpolated_state_);
     r_ += 0.05;
   }
 
