@@ -1,5 +1,8 @@
 #include "MultiGoalRRTConnect.h"
+#include "code/reeds_shepp.h"
 #include <iostream>
+using namespace std;
+
 
 MultiGoalRRTConnect::MultiGoalRRTConnect(double vehicle_length, double vehicle_width, int x_size, int y_size, bool* occupancy_grid, double cell_size, int k, double eps) {
   vehicle_length_ = vehicle_length;
