@@ -1,4 +1,5 @@
 *.avi
 *.mexa64
+*.mexmaci64
 .vscode/
 *.asv
