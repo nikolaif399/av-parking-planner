@@ -4,6 +4,7 @@
 #include <math.h>
 #include <vector>
 #include "mex.h"
+#include <iostream>
 #include "code/reeds_shepp.h"
 
 #define GETMAPINDEX(X, Y, XSIZE, YSIZE) (Y*XSIZE + X)
@@ -41,7 +42,7 @@ inline double StateDistance(State q1, State q2) {
   //   d += abs(q1[i] - q2[i]);
   // }
 
-  // replacing manhattan distance with the length of the Reeds Shepp path
+  // replacing manhattan distance with the length of the Reeds-Shepp path
   double Q1[3];
   double Q2[3];
 
@@ -62,15 +63,18 @@ inline double StateDistance(State q1, State q2) {
   r = 1 with return q2, etc
   */
 inline State GetIntermediateState(State q1, State q2, double ratio) {
-  State q_interm(q1.size());
-
+  
+  // State q_interm(q1.size());
   // for (int i = 0; i < q1.size(); ++i) {
   //   q_interm[i] = q1[i] + r*(q2[i] - q1[i]);
   // }
   // return q_interm;
 
+
+  // computing the point that is at a distance of ratio*length_of_reedshepppath along the reedshepp path
   double Q1[3];
   double Q2[3];
+  State q_interm(q1.size());
 
   for (int i  = 0; i < 3; i++) {
     Q1[i] = q1[i];
@@ -85,7 +89,7 @@ inline State GetIntermediateState(State q1, State q2, double ratio) {
   
   while (r_ < ratio*rspath_.length()) {
     rs.interpolate(Q1,rspath_, r_, interpolated_state_);
-    r_ += 0.1;
+    r_ += 0.05;
   }
 
   for (int i = 0; i < 3; i++) {

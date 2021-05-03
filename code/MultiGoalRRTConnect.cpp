@@ -109,8 +109,6 @@ std::vector<State> MultiGoalRRTConnect::plan(State start_state, std::vector<Stat
     other_tree_ = temp;
     cur_equal_start_ = !cur_equal_start_;
   }
-
-
   std::vector<State> plan;
 
   return plan;
