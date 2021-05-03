@@ -54,7 +54,7 @@ inline double StateDistance(State q1, State q2) {
     Q2[i] = q2[i];
   }
 
-  ReedsSheppStateSpace rs_ = ReedsSheppStateSpace(.1);
+  ReedsSheppStateSpace rs_ = ReedsSheppStateSpace(4);
   ReedsSheppStateSpace::ReedsSheppPath rspath_ = rs_.reedsShepp(Q1,Q2);
   double d = rspath_.length();
   return d;
@@ -84,17 +84,11 @@ inline State GetIntermediateState(State q1, State q2, double ratio) {
     Q2[i] = q2[i];
   }
 
-  ReedsSheppStateSpace rs_ = ReedsSheppStateSpace(.1);
+  ReedsSheppStateSpace rs_ = ReedsSheppStateSpace(4);
   ReedsSheppStateSpace::ReedsSheppPath rspath_ = rs_.reedsShepp(Q1,Q2);
-  double r_ = 0;
   double interpolated_state_[3];
   rs_.interpolate(Q1,rspath_, (ratio)*rspath_.length(), interpolated_state_);
-  
-  // while (r_ < (ratio*rspath_.length())) {
 
-  //   rs_.interpolate(Q1,rspath_, r_, interpolated_state_);
-  //   r_ += 0.01;
-  // }
   for (int i = 0; i < 3; i++) {
     q_interm[i] = interpolated_state_[i];
   }
