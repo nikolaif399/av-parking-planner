@@ -1,5 +1,7 @@
 #include "MultiGoalRRTConnect.h"
 #include <iostream>
+using namespace std;
+
 
 MultiGoalRRTConnect::MultiGoalRRTConnect(double vehicle_length, double vehicle_width, int x_size, int y_size, bool* occupancy_grid, double cell_size, int k, double eps) {
   vehicle_length_ = vehicle_length;
@@ -17,7 +19,7 @@ MultiGoalRRTConnect::MultiGoalRRTConnect(double vehicle_length, double vehicle_w
   state_hi_ = {x_size*cell_size,y_size*cell_size,M_PI};
   
   collision_detector_ = std::make_shared<CollisionDetector>(vehicle_length, vehicle_width, x_size, y_size, occupancy_grid, cell_size);
-  state_connector_ = std::make_shared<ReedsSheppStateSpace>(1); // Turning radius
+  state_connector_ = std::make_shared<ReedsSheppStateSpace>(4); // Turning radius
 }
 
 std::vector<State> MultiGoalRRTConnect::getPath(int start_ind, int start_ind_mid, int goal_ind, int goal_ind_mid, std::shared_ptr<Tree> goal_tree) {
@@ -84,12 +86,16 @@ std::vector<State> MultiGoalRRTConnect::plan(State start_state, std::vector<Stat
 
     // Try to extend the current tree towards to the new sample
     int ret_flag,new_index_extend;
+    // cout<<"before extending"<<endl;
     this->extend(q_sample, cur_tree_, ret_flag, new_index_extend);
 
+    // cout<<"after extending"<<endl;
+    // cout<<"ret flag is"<<ret_flag<<endl;
     // If not trapped, try to connect to other tree
     if (ret_flag != TRAPPED) {
       State q_new = cur_tree_->getState(new_index_extend);
       int new_index_connect;
+
       this->connect(q_new, ret_flag, new_index_connect);
 
       // If connect reached, we have a path from start to goal!
@@ -106,7 +112,6 @@ std::vector<State> MultiGoalRRTConnect::plan(State start_state, std::vector<Stat
           start_ind_mid = new_index_connect;
           goal_ind_mid = new_index_extend;
         }
-        
         return this->getPath(start_ind, start_ind_mid, goal_inds.at(goal_tree_cur_index), goal_ind_mid, goal_trees_.at(goal_tree_cur_index));
       }
     }
@@ -129,7 +134,6 @@ std::vector<State> MultiGoalRRTConnect::plan(State start_state, std::vector<Stat
 
     cur_equal_start_ = !cur_equal_start_;
   }
-
   std::vector<State> plan;
   return plan;
 }
@@ -141,6 +145,7 @@ void MultiGoalRRTConnect::extend(State q_sample, std::shared_ptr<Tree> tree_exte
   // Couldn't find new point to extend towards goal
   if (nearest_index == -1) {
     ret_flag = TRAPPED;
+    cout<<"Trapped"<<endl;
     return;
   }
   
@@ -148,10 +153,9 @@ void MultiGoalRRTConnect::extend(State q_sample, std::shared_ptr<Tree> tree_exte
   State q_nearest = tree_extending_from->getState(nearest_index);
   std::pair<State,bool> new_state = this->get_new_state(q_nearest,q_sample,eps_);
   State q_new = new_state.first;
-
+  // cout<<"checking for collisions"<<endl;
   // Check for collision using twenty intermediate states (can be increased if cutting through obstacles)
   if(!collision_detector_->checkCollisionLine(q_nearest, q_new, 20)) {
-    //printf("Collision free!")
     ret_flag = new_state.second ? REACHED : ADVANCED;
     new_index = tree_extending_from->addVertex(q_new);
     tree_extending_from->addEdge(nearest_index, new_index);
@@ -197,7 +201,7 @@ State MultiGoalRRTConnect::random_valid_sample() {
 }
 
 std::vector<State> MultiGoalRRTConnect::interpolatePath(std::vector<State> plan_states) {
-  int N = 5;
+  int N = 10;
 
   std::vector<State> new_path;
   int num_points;
@@ -222,7 +226,7 @@ std::vector<State> MultiGoalRRTConnect::shortcutPath(std::vector<State> plan_sta
   std::vector<State> new_path;
   new_path.push_back(plan_states.front());
 
-  while(i < 20) {
+  while(i < 100) {
     State active = new_path.back();
 
     for (int comp_ind = plan_states.size() - 1; comp_ind >= 0; comp_ind--) {
@@ -238,6 +242,5 @@ std::vector<State> MultiGoalRRTConnect::shortcutPath(std::vector<State> plan_sta
     }
     i++;
   }
-  
   return new_path;
 }

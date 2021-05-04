@@ -4,6 +4,9 @@
 #include <math.h>
 #include <vector>
 #include "mex.h"
+#include <iostream>
+#include "reeds_shepp.h"
+using namespace std;
 
 #define GETMAPINDEX(X, Y, XSIZE, YSIZE) (Y*XSIZE + X)
 
@@ -33,13 +36,27 @@ inline double GetRand(double min, double max) {
 
 /* Returns distance between states, used in nearest neighbors search */
 inline double StateDistance(State q1, State q2) {
-  double d = 0;
+  
 
   // Just manhattan distance for now
-  for (int i  = 0; i < 2; ++i) {
-    d += abs(q1[i] - q2[i]);
+  // double d = 0;
+  // for (int i  = 0; i < 2; ++i) {
+  //   d += abs(q1[i] - q2[i]);
+  // }
+  // return d;
+
+  // replacing manhattan distance with the length of the Reeds-Shepp path
+  double Q1[3];
+  double Q2[3];
+
+  for (int i  = 0; i < 3; i++) {
+    Q1[i] = q1[i];
+    Q2[i] = q2[i];
   }
 
+  ReedsSheppStateSpace rs_ = ReedsSheppStateSpace(4);
+  ReedsSheppStateSpace::ReedsSheppPath rspath_ = rs_.reedsShepp(Q1,Q2);
+  double d = rspath_.length();
   return d;
 }
 
@@ -48,11 +65,32 @@ inline double StateDistance(State q1, State q2) {
   r = 0.5 will return halfway between q1 and q2
   r = 1 with return q2, etc
   */
-inline State GetIntermediateState(State q1, State q2, double r) {
+inline State GetIntermediateState(State q1, State q2, double ratio) {
+  
+  // State q_interm(q1.size());
+  // for (int i = 0; i < q1.size(); ++i) {
+  //   q_interm[i] = q1[i] + ratio*(q2[i] - q1[i]);
+  // }
+  // return q_interm;
+
+
+  // computing the point that is at a distance of ratio*length_of_reedshepppath along the reedshepp path
+  double Q1[3];
+  double Q2[3];
   State q_interm(q1.size());
 
-  for (int i = 0; i < q1.size(); ++i) {
-    q_interm[i] = q1[i] + r*(q2[i] - q1[i]);
+  for (int i  = 0; i < 3; i++) {
+    Q1[i] = q1[i];
+    Q2[i] = q2[i];
+  }
+
+  ReedsSheppStateSpace rs_ = ReedsSheppStateSpace(4);
+  ReedsSheppStateSpace::ReedsSheppPath rspath_ = rs_.reedsShepp(Q1,Q2);
+  double interpolated_state_[3];
+  rs_.interpolate(Q1,rspath_, (ratio)*rspath_.length(), interpolated_state_);
+
+  for (int i = 0; i < 3; i++) {
+    q_interm[i] = interpolated_state_[i];
   }
   return q_interm;
 }

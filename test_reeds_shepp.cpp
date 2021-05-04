@@ -9,7 +9,7 @@ int main(int argc, char** argv) {
   std::cout << "Test started!" << std::endl;
 
   double start[3] = {0,0,0};
-  double goal[3] = {5,0,1.56};
+  double goal[3] = {5,0,0};
 
   ReedsSheppStateSpace rs = ReedsSheppStateSpace(1);
 
@@ -21,18 +21,13 @@ int main(int argc, char** argv) {
   double r = 0;
   double interpolated_state[3];
   
-  vector<vector<double>> smooth_path;
+  
   while (r < rspath.length()) {
     rs.interpolate(start,rspath, r, interpolated_state);
-    vector<double> is;
-    for (int i = 0 ; i < 3 ; i++){
-      is.push_back(interpolated_state[i]);
-    }
-    smooth_path.push_back(is);
     r += 0.1;
   }
   
-  // printf("Interpolated state: [%.2f, %.2f, %.2f]", interpolated_state[0], interpolated_state[1], interpolated_state[2]);
+  printf("Interpolated state: [%.2f, %.2f, %.2f]", interpolated_state[0], interpolated_state[1], interpolated_state[2]);
   high_resolution_clock::time_point t2 = high_resolution_clock::now();
 
   duration<double> time = duration_cast<duration<double> >(t2 - t1);
