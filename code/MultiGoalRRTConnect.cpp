@@ -21,7 +21,7 @@ MultiGoalRRTConnect::MultiGoalRRTConnect(double vehicle_length, double vehicle_w
   state_hi_ = {x_size*cell_size,y_size*cell_size,M_PI};
   
   collision_detector_ = std::make_shared<CollisionDetector>(vehicle_length, vehicle_width, x_size, y_size, occupancy_grid, cell_size);
-  state_connector_ = std::make_shared<ReedsSheppStateSpace>(4); // Turning radius
+  state_connector_ = std::make_shared<ReedsSheppStateSpace>(1); // Turning radius
 }
 
 // Implement main planner here
@@ -180,7 +180,7 @@ State MultiGoalRRTConnect::random_valid_sample() {
 }
 
 std::vector<State> MultiGoalRRTConnect::interpolatePath(std::vector<State> plan_states) {
-  int N = 10;
+  int N = 20;
 
   std::vector<State> new_path;
   int num_points;
@@ -205,7 +205,7 @@ std::vector<State> MultiGoalRRTConnect::shortcutPath(std::vector<State> plan_sta
   std::vector<State> new_path;
   new_path.push_back(plan_states.front());
 
-  while(i < 100) {
+  while(i < 20) {
     State active = new_path.back();
 
     for (int comp_ind = plan_states.size() - 1; comp_ind >= 0; comp_ind--) {

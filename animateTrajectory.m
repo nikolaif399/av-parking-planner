@@ -1,7 +1,7 @@
 function [] = animateTrajectory(startState, goalStates, costmap,planStates,vehicleDims)
 frameRate = 60;
 
-record = 0;
+record = 1;
 if (record)
     v = VideoWriter('planner');
     v.FrameRate = frameRate;
@@ -68,11 +68,11 @@ for i = 1:size(planStates,1)
     if (record)
         writeVideo(v,getframe(gcf));
     end
-    
+    drawnow
     %plot(x,y, 'c-');
-    pause(1/frameRate);
+%     pause(1/frameRate);
 end
-
+pause(2)
 if (record)
     v.close();
 end

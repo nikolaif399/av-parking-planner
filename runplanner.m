@@ -1,3 +1,11 @@
+clear all
+close all
+clc
+pause(1)
+mex planner.cpp code/*.cpp -Icode/*.h
+pause(1)
+clear all
+
 % Construct vehicle cost map
 mapLayers.StationaryObstacles = imread('env/stationary.bmp');
 mapLayers.RoadMarkings        = imread('env/road_markings.bmp');
@@ -15,13 +23,14 @@ cellsize = 0.5; % meters
 combinedMapBin = boolean(im2single(combinedMap));
 
 % Call planner here
-startState = [12.5 12.5 0];
-goalStates = [36 45 pi/2;
-             45 5 -pi/2];
+startState = [16 8 0];
+goalStates = [16 16 pi/2;
+              ];
 
 tic
 [planStates,planLength] = planner(startState,goalStates,vehicleDims,combinedMapBin',cellsize);
 toc
 
 costmap = vehicleCostmap(combinedMap, 'CellSize', cellsize);
+planStates = preprocess_data(planStates,1);
 animateTrajectory(startState, goalStates, costmap,planStates,vehicleDims);

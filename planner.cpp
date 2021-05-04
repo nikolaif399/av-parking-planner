@@ -1,6 +1,7 @@
 #include <math.h>
 #include <vector>
 #include "mex.h"
+using namespace std;
 
 #include "code/MultiGoalRRTConnect.h"
 #include "code/planner_utils.h"
@@ -78,8 +79,9 @@ void mexFunction( int nlhs, mxArray *plhs[],
   //printf("Cell size: %f\n", cell_size);
 
   // call the planner
-  int k = 10000;
-  double eps = 5;
+  int k = 100000;
+  double eps = 10;
+  cout<<"calling planner"<<endl;
   MultiGoalRRTConnect planner(vehicle_length, vehicle_width, x_size, y_size, occupancy_grid, cell_size, k, eps);
   std::vector<State> plan = planner.plan(start_state, goal_states);
 
