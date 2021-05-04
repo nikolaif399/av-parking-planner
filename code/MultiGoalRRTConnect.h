@@ -21,7 +21,6 @@ public:
   std::vector<State> plan(State start_state, std::vector<State> goal_states);
 
   std::shared_ptr<Tree> start_tree_;
-  
   std::vector<std::shared_ptr<Tree>> goal_trees_;
 
 private:
@@ -49,6 +48,9 @@ private:
   // Resample along path for smooth trajectory
   std::vector<State> interpolatePath(std::vector<State> plan_states);
 
+  // Assemble final trajectory through trees
+  std::vector<State> getPath(int start_ind, int start_ind_mid, int goal_ind, int goal_ind_mid, std::shared_ptr<Tree> goal_tree);
+
   double vehicle_length_;
   double vehicle_width_;
   int x_size_;
@@ -65,13 +67,14 @@ private:
   std::shared_ptr<Tree> cur_tree_,other_tree_;
   bool cur_equal_start_;
 
-  std::shared_ptr<CollisionDetector> collision_detector_;
-
   // State lower bound
   State state_lo_;
 
   // State upper bound
   State state_hi_;
+
+  // Collision detector
+  std::shared_ptr<CollisionDetector> collision_detector_;
 
   // Reeds shepp state connector
   std::shared_ptr<ReedsSheppStateSpace> state_connector_;

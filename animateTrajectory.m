@@ -8,7 +8,12 @@ if (record)
     v.open()
 end
 
-fig = figure('units','normalized','outerposition',[0 0 1 1],'color','white'); 
+fullscreen = 0;
+if (fullscreen)
+  fig = figure('units','normalized','outerposition',[0 0 1 1],'color','white'); 
+else
+  fig = figure();
+end
 
 plot(costmap, 'Inflation', 'off')
 impixelinfo;
