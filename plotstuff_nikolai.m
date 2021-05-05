@@ -4,7 +4,7 @@ global L W
 % L and W are length and width of the car
 
 w      = W/2;
-l      = L/4;
+l      = L/5;
 x      = z(1);
 y      = z(2);
 theta  = z(3);
