@@ -19,8 +19,8 @@ X      = V(1,:);
 Y      = V(2,:);
 line(X,Y,'linewidth',6,'color','red');
 hold on
-p1 = [x;y] + (w/2)*e(theta+pi/2); pw1 = p1 + (l)*e(theta); pw2 = p1 - (l/2)*e(theta);
-p2 = [x;y] - (w/2)*e(theta+pi/2); pw3 = p2 + (l)*e(theta); pw4 = p2 - (l/2)*e(theta);
+p1 = [x;y] + (w/2)*e(theta+pi/2); pw1 = p1 + (l/2)*e(theta); pw2 = p1 - (l/2)*e(theta);
+p2 = [x;y] - (w/2)*e(theta+pi/2); pw3 = p2 + (l/2)*e(theta); pw4 = p2 - (l/2)*e(theta);
 
 P1 = [pw1 pw2]; line(P1(1,:),P1(2,:),'linewidth',4,'color','black');
 P2 = [pw3 pw4]; line(P2(1,:),P2(2,:),'linewidth',4,'color','black');
@@ -43,8 +43,8 @@ Y      = V(2,:);
 line(X,Y,'linewidth',3,'color','black');
 
 hold on
-p1 = [x;y] + (w/2)*e(theta+pi/2); pw1 = p1 + (l)*e(theta); pw2 = p1 - (l/2)*e(theta);
-p2 = [x;y] - (w/2)*e(theta+pi/2); pw3 = p2 + (l)*e(theta); pw4 = p2 - (l/2)*e(theta);
+p1 = [x;y] + (w/2)*e(theta+pi/2); pw1 = p1 + (l/2)*e(theta); pw2 = p1 - (l/2)*e(theta);
+p2 = [x;y] - (w/2)*e(theta+pi/2); pw3 = p2 + (l/2)*e(theta); pw4 = p2 - (l/2)*e(theta);
 
 P1 = [pw1 pw2]; line(P1(1,:),P1(2,:),'linewidth',4,'color','black');
 P2 = [pw3 pw4]; line(P2(1,:),P2(2,:),'linewidth',4,'color','black');
