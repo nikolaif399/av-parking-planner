@@ -19,7 +19,9 @@ combinedMapBin = boolean(im2single(combinedMap));
 possibleStartStates = [12.5 12.5 0;
                        65 37.5 0;
                        10 37.5 pi/3;
-                       60 12.5 2*pi/3];
+                       60 12.5 2*pi/3;
+                       67.5 10 pi/2;
+                       2.5 25 0];
                    
 startState = possibleStartStates(randperm(size(possibleStartStates,1),1),:);
 

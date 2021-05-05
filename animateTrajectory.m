@@ -33,7 +33,6 @@ y = [-width/2,width/2,width/2,-width/2];
 car = patch('XData',x,'YData',y,'FaceColor','blue','Parent',g);
 set(car,'parent',g);
 
-
 % Draw car at start state
 startState = num2cell(startState);
 [xs,ys,thetas] = startState{:};
@@ -46,6 +45,9 @@ y = [-width/2,width/2,width/2,-width/2];
 carStart = patch('XData',x,'YData',y,'FaceColor','none','EdgeColor','green','Parent',g);
 carStart.FaceVertexAlphaData = 0.9;
 set(carStart,'parent',gStart);
+
+hold on
+plot1 = scatter(xs,ys,6,'MarkerFaceAlpha',.2,'MarkerEdgeAlpha',.2);
 
 % Draw car at each goal state
 for i = 1:size(goalStates,1)
@@ -61,20 +63,17 @@ for i = 1:size(goalStates,1)
     set(carGoal,'parent',gGoal);
 end
 
-thetaLast = thetas;
 for i = 1:size(planStates,1)
     pose = num2cell(planStates(i,:));
     
     [x,y,theta] = pose{:};
-    alpha = (theta - thetaLast);
-    thetaLast = theta;
-    
+
     trans=makehgtform('translate',[x y 0]);
     rot=makehgtform('zrotate',theta);
     set(g,'Matrix',trans*rot);
     
-    %x3 = x + length*cos(theta);
-    %y3 = x + length*cos(theta);
+    plot1.XData = [plot1.XData x];
+    plot1.YData = [plot1.YData y];
     
     if (record)
         writeVideo(v,getframe(gcf));
