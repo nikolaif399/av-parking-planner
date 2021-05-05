@@ -8,7 +8,7 @@ combinedMap = mapLayers.StationaryObstacles + mapLayers.RoadMarkings + ...
 combinedMap = im2single(combinedMap);
 
 % Load vehicle dimensions
-vehicleDims = [4,2]; % length, width
+vehicleDims = [4,2.5]; % length, width
 
 % Decompose map into occupancy map
 cellsize = 0.5; % meters

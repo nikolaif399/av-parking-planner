@@ -28,7 +28,7 @@ length = vehicleDims(1);
 width = vehicleDims(2);
 
 g = hgtransform;
-x = [0,0,length,length];
+x = [-0.25*length,-0.25*length,length,length];
 y = [-width/2,width/2,width/2,-width/2];
 car = patch('XData',x,'YData',y,'FaceColor','blue','Parent',g);
 set(car,'parent',g);
@@ -41,7 +41,7 @@ trans=makehgtform('translate',[xs ys 0]);
 rot=makehgtform('zrotate',thetas);
 gStart = hgtransform;
 set(gStart,'Matrix',trans*rot);
-x = [0,0,length,length];
+x = [-0.25*length,-0.25*length,length,length];
 y = [-width/2,width/2,width/2,-width/2];
 carStart = patch('XData',x,'YData',y,'FaceColor','none','EdgeColor','green','Parent',g);
 carStart.FaceVertexAlphaData = 0.9;
@@ -55,7 +55,7 @@ for i = 1:size(goalStates,1)
     rot=makehgtform('zrotate',thetag);
     gGoal = hgtransform;
     set(gGoal,'Matrix',trans*rot);
-    x = [0,0,length,length];
+    x = [-0.25*length,-0.25*length,length,length];
     y = [-width/2,width/2,width/2,-width/2];
     carGoal = patch('XData',x,'YData',y,'FaceColor','none','EdgeColor','red','Parent',g);
     set(carGoal,'parent',gGoal);

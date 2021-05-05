@@ -123,17 +123,23 @@ bool CollisionDetector::checkCollision(State state) {
   double ccar = cos(thetacar);
 
   // Find indices of four corners in state space units
-  double x1 = xcar + vehicle_width_/2*scar;
-  double y1 = ycar - vehicle_width_/2*ccar;
+  double x1_a = xcar + vehicle_width_/2*scar;
+  double y1_a = ycar - vehicle_width_/2*ccar;
 
-  double x2 = xcar - vehicle_width_/2*scar;
-  double y2 = ycar + vehicle_width_/2*ccar;
+  double x2_a = xcar - vehicle_width_/2*scar;
+  double y2_a = ycar + vehicle_width_/2*ccar;
 
-  double x3 = x2 + vehicle_length_*ccar;
-  double y3 = y2 + vehicle_length_*scar;
+  double x1 = x1_a - 0.25*vehicle_length_*ccar;
+  double y1 = y1_a - 0.25*vehicle_length_*scar;
 
-  double x4 = x1 + vehicle_length_*ccar;
-  double y4 = y1 + vehicle_length_*scar;
+  double x2 = x2_a - 0.25*vehicle_length_*ccar;
+  double y2 = y2_a - 0.25*vehicle_length_*scar;
+
+  double x3 = x2_a + vehicle_length_*ccar;
+  double y3 = y2_a + vehicle_length_*scar;
+
+  double x4 = x1_a + vehicle_length_*ccar;
+  double y4 = y1_a + vehicle_length_*scar;
 
   // Convert all corners to occupancy grid measurements
   x1 /= cell_size_;
