@@ -27,8 +27,7 @@ P2 = [pw3 pw4]; line(P2(1,:),P2(2,:),'linewidth',4,'color','black');
 
 hold on
 
-w      = W/2;
-l      = L/4;
+
 x      = zd(1);
 y      = zd(2);
 theta  = zd(3);
