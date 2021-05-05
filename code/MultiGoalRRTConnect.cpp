@@ -19,7 +19,7 @@ MultiGoalRRTConnect::MultiGoalRRTConnect(double vehicle_length, double vehicle_w
   state_hi_ = {x_size*cell_size,y_size*cell_size,1.5*M_PI};
   
   collision_detector_ = std::make_shared<CollisionDetector>(vehicle_length, vehicle_width, x_size, y_size, occupancy_grid, cell_size);
-  state_connector_ = std::make_shared<ReedsSheppStateSpace>(1); // Turning radius
+  state_connector_ = std::make_shared<ReedsSheppStateSpace>(6); // Turning radius
 }
 
 std::vector<State> MultiGoalRRTConnect::getPath(int start_ind, int start_ind_mid, int goal_ind, int goal_ind_mid, std::shared_ptr<Tree> goal_tree) {
@@ -36,16 +36,16 @@ std::vector<State> MultiGoalRRTConnect::getPath(int start_ind, int start_ind_mid
   std::vector<State> plan_states;
   plan_states.insert(plan_states.begin(), plan_states_start.begin(), plan_states_start.end());
   plan_states.insert(plan_states.end(), plan_states_goal.begin(), plan_states_goal.end());
-  printf("Raw plan size: %zu\n", plan_states.size());
+  //printf("Raw plan size: %zu\n", plan_states.size());
 
   //return plan_states;
   //Remove shortcuttable states
   plan_states = this->shortcutPath(plan_states);
-  printf("Plan size after shortcutting: %zu\n", plan_states.size());
+  //printf("Plan size after shortcutting: %zu\n", plan_states.size());
 
   // Interpolate along path to get smooth trajectory
   plan_states = this->interpolatePath(plan_states);
-  printf("Plan size after interpolating: %zu\n", plan_states.size());
+  //printf("Plan size after interpolating: %zu\n", plan_states.size());
 
   return plan_states;
 }
@@ -71,6 +71,8 @@ std::vector<State> MultiGoalRRTConnect::plan(State start_state, std::vector<Stat
     goal_trees_.push_back(std::make_shared<Tree>(state_lo_.size()));
     goal_inds.push_back(goal_trees_.back()->addVertex(goal_states.at(i)));
   }
+
+  std::vector<std::vector<State>> possible_paths;
 
   int goal_tree_cur_index = 0;
   
@@ -101,8 +103,8 @@ std::vector<State> MultiGoalRRTConnect::plan(State start_state, std::vector<Stat
       // If connect reached, we have a path from start to goal!
       // Compute the index of the midpoint state in both trees
       if (ret_flag == REACHED) {
-        printf("Reached goal!!\n");
-        printf("Goal tree index: %d\n", goal_tree_cur_index);
+        //printf("Reached goal!!\n");
+        //printf("Goal tree index: %d\n", goal_tree_cur_index);
         int start_ind_mid,goal_ind_mid;
         if (cur_equal_start_) {
           start_ind_mid = new_index_extend;
@@ -112,7 +114,21 @@ std::vector<State> MultiGoalRRTConnect::plan(State start_state, std::vector<Stat
           start_ind_mid = new_index_connect;
           goal_ind_mid = new_index_extend;
         }
-        return this->getPath(start_ind, start_ind_mid, goal_inds.at(goal_tree_cur_index), goal_ind_mid, goal_trees_.at(goal_tree_cur_index));
+        possible_paths.push_back(this->getPath(start_ind, start_ind_mid, goal_inds.at(goal_tree_cur_index), goal_ind_mid, goal_trees_.at(goal_tree_cur_index)));
+        goal_inds.erase(goal_inds.begin() + goal_tree_cur_index);
+        goal_trees_.erase(goal_trees_.begin() + goal_tree_cur_index);
+        if (goal_trees_.empty()) {
+            std::vector<State> best_plan = possible_paths.front();
+            double best_plan_quality = getPlanCost(best_plan);
+            for (int i = 0; i < possible_paths.size(); ++i) {
+                double plan_quality = getPlanCost(possible_paths.at(i));
+                if (plan_quality < best_plan_quality) {
+                    best_plan = possible_paths.at(i);
+                    best_plan_quality = plan_quality;
+                }
+            }
+            return best_plan;
+        }
       }
     }
 
@@ -128,14 +144,15 @@ std::vector<State> MultiGoalRRTConnect::plan(State start_state, std::vector<Stat
       other_tree_ = start_tree_;
     }
     else {
+      if (goal_tree_cur_index >= goal_trees_.size()) {
+        goal_tree_cur_index = 0;
+      }
       cur_tree_ = start_tree_;
       other_tree_ = goal_trees_.at(goal_tree_cur_index);
     }
 
     cur_equal_start_ = !cur_equal_start_;
   }
-  std::vector<State> plan;
-  return plan;
 }
 
 void MultiGoalRRTConnect::extend(State q_sample, std::shared_ptr<Tree> tree_extending_from, int& ret_flag, int& new_index) {
@@ -145,7 +162,7 @@ void MultiGoalRRTConnect::extend(State q_sample, std::shared_ptr<Tree> tree_exte
   // Couldn't find new point to extend towards goal
   if (nearest_index == -1) {
     ret_flag = TRAPPED;
-    cout<<"Trapped"<<endl;
+    //cout<<"Trapped"<<endl;
     return;
   }
   

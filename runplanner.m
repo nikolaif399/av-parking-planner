@@ -16,8 +16,12 @@ combinedMapBin = boolean(im2single(combinedMap));
 
 % Call planner here
 
-startState = [12.5 12.5 0];
-startState = [65 37.5 0];
+possibleStartStates = [12.5 12.5 0;
+                       65 37.5 0;
+                       10 37.5 pi/3;
+                       60 12.5 2*pi/3];
+                   
+startState = possibleStartStates(randperm(size(possibleStartStates,1),1),:);
 
 goalStates = [14 45 pi/2;
               14 5 -pi/2

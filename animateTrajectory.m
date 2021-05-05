@@ -61,14 +61,20 @@ for i = 1:size(goalStates,1)
     set(carGoal,'parent',gGoal);
 end
 
+thetaLast = thetas;
 for i = 1:size(planStates,1)
     pose = num2cell(planStates(i,:));
     
     [x,y,theta] = pose{:};
+    alpha = (theta - thetaLast);
+    thetaLast = theta;
     
     trans=makehgtform('translate',[x y 0]);
     rot=makehgtform('zrotate',theta);
     set(g,'Matrix',trans*rot);
+    
+    %x3 = x + length*cos(theta);
+    %y3 = x + length*cos(theta);
     
     if (record)
         writeVideo(v,getframe(gcf));

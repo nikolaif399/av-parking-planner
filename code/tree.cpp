@@ -85,7 +85,7 @@ void Tree::saveTree(int x_size, std::string filename) {
 */
 
 std::vector<State> Tree::getPath(int start_index, int goal_index) {
-  printf("Backtracking path through tree... ");
+  //printf("Backtracking path through tree... ");
 
   // Count how many elements there are in the proposed path
   int cur_ind = goal_index;
@@ -97,7 +97,7 @@ std::vector<State> Tree::getPath(int start_index, int goal_index) {
   plan_states.push_back(this->getState(start_index));
   std::reverse(plan_states.begin(),plan_states.end());
 
-  printf("done.\n");
+  //printf("done.\n");
 
   return plan_states;
 }

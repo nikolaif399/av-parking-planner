@@ -29,6 +29,18 @@ inline void PrintState(State s) {
   printf("%.2f]\n", s.back());
 }
 
+inline double getPlanCost(std::vector<State> plan) {
+    double d = 0;
+    double weights[3] = {1,1,20};
+
+    for (int j = 0; j < plan.size()-1; ++j) {
+        for (int i  = 0; i < 3; ++i) {
+            d += weights[i]*abs(plan.at(j).at(i) - plan.at(j+1).at(i));
+        }
+    }
+    return d;
+}
+
 // Get a random double between min and max
 inline double GetRand(double min, double max) {
   return min + (max - min) * (double) rand()/RAND_MAX;
@@ -36,14 +48,6 @@ inline double GetRand(double min, double max) {
 
 /* Returns distance between states, used in nearest neighbors search */
 inline double StateDistance(State q1, State q2) {
-  
-
-  // Just manhattan distance for now
-  // double d = 0;
-  // for (int i  = 0; i < 2; ++i) {
-  //   d += abs(q1[i] - q2[i]);
-  // }
-  // return d;
 
   // replacing manhattan distance with the length of the Reeds-Shepp path
   double Q1[3];
@@ -54,7 +58,7 @@ inline double StateDistance(State q1, State q2) {
     Q2[i] = q2[i];
   }
 
-  ReedsSheppStateSpace rs_ = ReedsSheppStateSpace(1);
+  ReedsSheppStateSpace rs_ = ReedsSheppStateSpace(6);
   ReedsSheppStateSpace::ReedsSheppPath rspath_ = rs_.reedsShepp(Q1,Q2);
   double d = rspath_.length();
   return d;
@@ -84,7 +88,7 @@ inline State GetIntermediateState(State q1, State q2, double ratio) {
     Q2[i] = q2[i];
   }
 
-  ReedsSheppStateSpace rs_ = ReedsSheppStateSpace(1);
+  ReedsSheppStateSpace rs_ = ReedsSheppStateSpace(6);
   ReedsSheppStateSpace::ReedsSheppPath rspath_ = rs_.reedsShepp(Q1,Q2);
   double interpolated_state_[3];
   rs_.interpolate(Q1,rspath_, (ratio)*rspath_.length(), interpolated_state_);
