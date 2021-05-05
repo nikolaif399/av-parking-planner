@@ -19,7 +19,7 @@ MultiGoalRRTConnect::MultiGoalRRTConnect(double vehicle_length, double vehicle_w
   state_hi_ = {x_size*cell_size,y_size*cell_size,1.5*M_PI};
   
   collision_detector_ = std::make_shared<CollisionDetector>(vehicle_length, vehicle_width, x_size, y_size, occupancy_grid, cell_size);
-  state_connector_ = std::make_shared<ReedsSheppStateSpace>(4); // Turning radius
+  state_connector_ = std::make_shared<ReedsSheppStateSpace>(1); // Turning radius
 }
 
 std::vector<State> MultiGoalRRTConnect::getPath(int start_ind, int start_ind_mid, int goal_ind, int goal_ind_mid, std::shared_ptr<Tree> goal_tree) {
