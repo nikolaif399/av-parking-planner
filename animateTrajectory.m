@@ -1,9 +1,9 @@
 function [] = animateTrajectory(startState, goalStates, costmap,planStates,vehicleDims)
 frameRate = 60;
 
-record = 0;
+record = 1;
 if (record)
-    v = VideoWriter('planner');
+    v = VideoWriter('report_parallel_planner','MPEG-4');
     v.FrameRate = frameRate;
     v.open()
 end
@@ -47,7 +47,8 @@ carStart.FaceVertexAlphaData = 0.9;
 set(carStart,'parent',gStart);
 
 hold on
-plot1 = scatter(xs,ys,6,'MarkerFaceAlpha',.2,'MarkerEdgeAlpha',.2);
+plot1 = scatter(xs,ys,6,'r');
+
 
 % Draw car at each goal state
 for i = 1:size(goalStates,1)

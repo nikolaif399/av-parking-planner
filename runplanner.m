@@ -22,6 +22,9 @@ possibleStartStates = [12.5 12.5 0;
                        60 12.5 2*pi/3;
                        67.5 10 pi/2;
                        2.5 25 0];
+possibleStartStates = [
+                       15 37.5 2*pi/3;
+                       ];
                    
 startState = possibleStartStates(randperm(size(possibleStartStates,1),1),:);
 
@@ -30,6 +33,8 @@ goalStates = [14 45 pi/2;
               36 45 pi/2;
               45 5 -pi/2];
 
+goalStates = [65 37.5 2*pi/3;
+              ];
 tic
 [planStates,planLength] = planner(startState,goalStates,vehicleDims,combinedMapBin',cellsize);
 toc
