@@ -14,12 +14,5 @@ mex planner.cpp code/*.cpp -Icode/*.h
 runplanner
 ```
 
-For collision detection debug script
-```bash
-cd av-parking-planner
-mex collision_debug.cpp code/*.cpp -Icode/*.h
-test_collision_detector
-```
-
 Currently the collision detector just computes the indices in the occupancy grid that need checked
 
