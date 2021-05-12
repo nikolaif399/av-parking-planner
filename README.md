@@ -13,6 +13,3 @@ cd av-parking-planner
 mex planner.cpp code/*.cpp -Icode/*.h
 runplanner
 ```
-
-Currently the collision detector just computes the indices in the occupancy grid that need checked
-
