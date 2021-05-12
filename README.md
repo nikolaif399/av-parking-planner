@@ -1,7 +1,7 @@
 # Autonomous Vehicle Parking Planner
 
-### Sample animation using parking lot environment
-![Parking Lot Environment](environment_video.gif)
+### Multi-Goal RRT-Connect in Parking Lot Environment
+![Planner](planner.gif)
 
 
 ### Build and Run instructions
