@@ -3,7 +3,7 @@ frameRate = 60;
 
 record = 1;
 if (record)
-    v = VideoWriter('report_parallel_planner','MPEG-4');
+    v = VideoWriter('planner');
     v.FrameRate = frameRate;
     v.open()
 end
